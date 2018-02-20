@@ -28,21 +28,24 @@ GOLD = (255, 210, 0)
 GREY = (128, 128, 128)
 
 # background
-class WorldBlock():
-    def __init__(self, xpos, ypos):
-        self.image = pg.Surface((int(W/10), int(H/10)))
-        self.rect = self.image.get_rect()
-        self.rect.x = xpos
-        self.rect.y = ypos
-        
-worldblocks = [[] for _ in range(len(WorldArray.world))]
-for element in range(len(WorldArray.world)):
-    for index in range(len(WorldArray.world[element])):
-        worldblocks[element].append(WorldBlock(int(W/10)*element, int(H/10)*index))
-        if WorldArray.world[element][index] == 0:
-            worldblocks[element][index].image.fill((GOLD))
-        else:
-            worldblocks[element][index].image.fill((GREY))
+bg = WorldArray.world
+def WorldDraw(bg):
+    pos_x = int(W / 10)
+    pos_y = int(H / 10)
+    size_x = pos_x*1.15
+    size_y = pos_y*1.15
+    
+    for element in range(len(bg)):
+        for index in range(len(bg[element])):
+            if bg[element][index] == 0:
+                pg.draw.rect(DS, (GOLD), (pos_x*element, pos_y*index, size_x, size_y))
+            elif bg[element][index] == 1:
+                pg.draw.rect(DS, (GREY), (pos_x*element, pos_y*index, size_x, size_y))
+    
+    stageWidth = size_x * len(bg[0])
+    stageHeight = size_y * len(bg[0])
+    
+    return (stageWidth, stageHeight)
 
 #player info
 startScrollingPosX = HW
@@ -58,6 +61,7 @@ stagePosX = 0
 # main loop
 while True:
     events()
+    stageWidth, stageHeight = WorldDraw(bg)
     
     #movement
     k = pg.key.get_pressed()
@@ -79,13 +83,22 @@ while True:
     
     playerPosX += playerVelocityX
     playerPosY += playerVelocityY
-
-    for i in range(len(worldblocks)):
-        for j in range(len(worldblocks[i])):
-            DS.blit(worldblocks[i][j].image, worldblocks[i][j].rect)    
-            
-    pg.draw.circle(DS, WHITE, (int(playerPosX), int(playerPosY) - circleRadius), circleRadius, 0)
-            
+    
+    if playerPosX > stageWidth - circleRadius:
+        playerPosX = stageWidth - circleRadius
+    if playerPosX < circleRadius:
+        playerPosX = circleRadius
+    if playerPosX < startScrollingPosX:
+        circlePosX = playerPosX
+    elif playerPosX > stageWidth - startScrollingPosX:
+        circlePosX = playerPosX - stageWidth + W
+    else:
+        circlePosX = startScrollingPosX
+        stagePosX += -playerVelocityX
+    
+    
+    pg.draw.circle(DS, WHITE, (int(circlePosX), int(playerPosY) - circleRadius), circleRadius, 0)
+        
     pg.display.update()
     CLOCK.tick(FPS)
     DS.fill(BLACK)
