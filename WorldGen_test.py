@@ -1,6 +1,6 @@
 import WorldArray
 import pygame as pg
-import sys
+import sys, time
 
 worldArray = WorldArray.world
 #print(worldArray)
@@ -55,14 +55,20 @@ def worldDraw(worldblocks_blank, world_test):
 #            worldblocks[element][index].image.fill((255, 210, 0))
 #        else:
 #            worldblocks[element][index].image.fill((128, 128, 128))
-                
+
+worldblocks = worldDraw(worldblocks_blank, world_test)
 gameActive = True
+
+stupid_var = True
 
 while gameActive:
     events()
     
-    worldblocks = worldDraw(worldblocks_blank, world_test)
+    for a in worldblocks:
+        for block in a:
+            block.rect.x += 1
     
+    DS.fill((0,0,0))    
     for i in range(len(worldblocks)):
         for j in range(len(worldblocks[i])):
             DS.blit(worldblocks[i][j].image, worldblocks[i][j].rect)
