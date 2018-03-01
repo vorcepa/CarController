@@ -21,7 +21,7 @@ pg.init()
 CLOCK = pg.time.Clock()
 DS = pg.display.set_mode((W, H))
 pg.display.set_caption("code.Pylet - Scrolling Background with Player")
-FPS = .25
+FPS = 60 
 
 class WorldBlock():
     def __init__(self, xpos, ypos):
@@ -46,27 +46,30 @@ def worldDraw(worldblocks_blank, world_test):
                 worldblocks[a][b].image.fill((128, 128, 128))
     
     return worldblocks
-
-#worldblocks = worldblocks_blank[:]
-#for element in range(len(WorldArray.world)):
-#    for index in range(len(WorldArray.world[element])):
-#        worldblocks[element].append(WorldBlock(int(W/10)*element, int(H/10)*index))
-#        if WorldArray.world[element][index] == 0:
-#            worldblocks[element][index].image.fill((255, 210, 0))
-#        else:
-#            worldblocks[element][index].image.fill((128, 128, 128))
-
 worldblocks = worldDraw(worldblocks_blank, world_test)
-gameActive = True
 
-stupid_var = True
+gameActive = True
 
 while gameActive:
     events()
     
-    for a in worldblocks:
-        for block in a:
-            block.rect.x += 1
+    k = pg.key.get_pressed()
+    if k[pg.K_RIGHT]:
+        for lists in worldblocks:
+            for block in lists:
+                block.rect.x += -2
+    elif k[pg.K_LEFT]:
+        for lists in worldblocks:
+            for block in lists:
+                block.rect.x += 2
+    elif k[pg.K_UP]:
+        for lists in worldblocks:
+            for block in lists:
+                block.rect.y += 2
+    elif k[pg.K_DOWN]:
+        for lists in worldblocks:
+            for block in lists:
+                block.rect.y += -2
     
     DS.fill((0,0,0))    
     for i in range(len(worldblocks)):
@@ -74,3 +77,4 @@ while gameActive:
             DS.blit(worldblocks[i][j].image, worldblocks[i][j].rect)
     
     pg.display.update()
+    CLOCK.tick(FPS)
