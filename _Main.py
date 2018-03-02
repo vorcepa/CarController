@@ -54,6 +54,7 @@ class PIDCar():
     def playGame(self):  # maybe rename later?
         self.gotoMenu()
         rotation = (125, 0)
+        radian = 0
 
         gameActive = True
         while gameActive:
@@ -66,16 +67,17 @@ class PIDCar():
 
             activeKey = pg.key.get_pressed()
             if activeKey[pg.K_RIGHT]:
-                self.car.move(1, 0)
+                self.car.move(1, 0, radian)
                 rotation = self.dirReticle.move(activeKey)
-                pg.transform.rotate(self.car.image, 90)
+                radian = rotation[2]
             if activeKey[pg.K_LEFT]:
-                self.car.move(-1, 0)
+                self.car.move(-1, 0, radian)
                 rotation = self.dirReticle.move(activeKey)
+                radian = rotation[2]
             if activeKey[pg.K_UP]:
-                self.car.move(0, -1)
+                self.car.move(0, -1, radian)
             if activeKey[pg.K_DOWN]:
-                self.car.move(0, 1)
+                self.car.move(0, 1, radian)
 
             self.gameWindow.fill(utils.WHITE)
             self.map.resetMap()
