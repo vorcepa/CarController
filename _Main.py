@@ -1,7 +1,7 @@
 import pygame as pg
 import utils
 from BackgroundMap import GameMap
-from GenericCar import CarActive, DirectionOfMotion
+from GenericCar import CarActive, DirectionOfMotion, DirectionReticle
 
 
 class PIDCar():
@@ -14,6 +14,9 @@ class PIDCar():
         self.map = GameMap()
         self.car = CarActive()
         self.direction = DirectionOfMotion(self.car.image,
+                                           (self.car.rect.centerx,
+                                            self.car.rect.centery))
+        self.dirReticle = DirectionReticle(self.car.image,
                                            (self.car.rect.centerx,
                                             self.car.rect.centery))
 
@@ -50,6 +53,7 @@ class PIDCar():
 
     def playGame(self):  # maybe rename later?
         self.gotoMenu()
+        rotation = (125, 0)
 
         gameActive = True
         while gameActive:
@@ -63,8 +67,11 @@ class PIDCar():
             activeKey = pg.key.get_pressed()
             if activeKey[pg.K_RIGHT]:
                 self.car.move(1, 0)
+                rotation = self.dirReticle.move(activeKey)
+                pg.transform.rotate(self.car.image, 90)
             if activeKey[pg.K_LEFT]:
                 self.car.move(-1, 0)
+                rotation = self.dirReticle.move(activeKey)
             if activeKey[pg.K_UP]:
                 self.car.move(0, -1)
             if activeKey[pg.K_DOWN]:
@@ -74,8 +81,23 @@ class PIDCar():
             self.map.resetMap()
 
             self.car.update(self.map.activeMap)
-            self.map.update(self.gameWindow, self.car.rect)
-#            self.direction.update(self.image, self.car.rect)
+
+            """
+            offset updates the background *and* also returns a tuple
+            of the offset (x,y) coordinates between player location
+            on the background and the screen pixel location. This tuple
+            is used to draw the direction circle to the correct location.
+            """
+
+            offset = self.map.update(self.gameWindow, self.car.rect)
+            directionLoc = (self.car.rect.centerx + offset[0],
+                            self.car.rect.centery + offset[1])
+            self.direction.update(self.gameWindow, (directionLoc[0],
+                                                    directionLoc[1]))
+
+            """testing dirRecticle GIVE IT SOME SPACE"""
+            self.dirReticle.update(self.gameWindow, (directionLoc[0] + rotation[0],
+                                                     directionLoc[1] + rotation[1]))
             pg.display.update()
             self.clock.tick(self.FPS)
 
