@@ -10,7 +10,7 @@ class GameMap():
 
         self.offsetX = 0
         self.offsetY = 0
-        self.scrollSpeed = 5
+        self.scrollSpeed = 8
 
     def createMap(self):
         """
@@ -44,19 +44,21 @@ the background will start to scroll (giving the impression of a moving camera
 that follows the player).
     """
 
-    def update(self, gameWindow, carRect):
+    def update(self, gameWindow, carRect, move):
+        scrollSpeedX = move[0]
+        scrollSpeedY = move[1]
         rect = gameWindow.get_rect()
 
         # car scroll
         if carRect.centerx > rect.centerx - self.offsetX + 25:
-            self.offsetX -= self.scrollSpeed
+            self.offsetX -= scrollSpeedX
         elif carRect.centerx < rect.centerx - self.offsetX - 25:
-            self.offsetX += self.scrollSpeed
+            self.offsetX += scrollSpeedX
 
         if carRect.centery > rect.centery - self.offsetY + 25:
-            self.offsetY -= self.scrollSpeed
+            self.offsetY -= scrollSpeedY
         elif carRect.centery < rect.centery - self.offsetY - 25:
-            self.offsetY += self.scrollSpeed
+            self.offsetY += scrollSpeedY
 
         # stop scrolling at edge of map
         if carRect.left < 0:

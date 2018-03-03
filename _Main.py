@@ -9,7 +9,7 @@ class PIDCar():
         self.gameWindow = gameWindow
         pg.display.set_caption("Self-driving car")
         self.clock = pg.time.Clock()
-        self.FPS = 30
+        self.FPS = 60
 
         self.map = GameMap()
         self.car = CarActive()
@@ -42,7 +42,9 @@ class PIDCar():
                         self.quitGame()
 
             self.gameWindow.fill(utils.WHITE)
-            text = utils.getFont(size=64, style='bold').render("Self-driving Car", False, utils.BLACK)
+            text = utils.getFont(size=64,
+                                 style='bold').render("Self-driving Car",
+                                                      False, utils.BLACK)
             textRect = text.get_rect()
             textRect.center = self.gameWindow.get_rect().center
             textRect.y -= 250
@@ -55,6 +57,7 @@ class PIDCar():
         self.gotoMenu()
         rotation = (125, 0)
         radian = 0
+        move = (0, 0)
 
         gameActive = True
         while gameActive:
@@ -65,19 +68,21 @@ class PIDCar():
                     if event.key == pg.K_ESCAPE:
                         self.quitGame()
 
+            move = self.car.move(radian)
+
             activeKey = pg.key.get_pressed()
-            if activeKey[pg.K_RIGHT]:
-                self.car.move(1, 0, radian)
+            if activeKey[pg.K_RIGHT] and not activeKey[pg.K_LEFT]:
+#                move = self.car.move(radian)
                 rotation = self.dirReticle.move(activeKey)
                 radian = rotation[2]
-            if activeKey[pg.K_LEFT]:
-                self.car.move(-1, 0, radian)
+            if activeKey[pg.K_LEFT] and not activeKey[pg.K_RIGHT]:
+#                move = self.car.move(radian)
                 rotation = self.dirReticle.move(activeKey)
                 radian = rotation[2]
-            if activeKey[pg.K_UP]:
-                self.car.move(0, -1, radian)
-            if activeKey[pg.K_DOWN]:
-                self.car.move(0, 1, radian)
+#            if activeKey[pg.K_UP]:
+#                self.car.move(radian)
+#            if activeKey[pg.K_DOWN]:
+#                self.car.move(radian)
 
             self.gameWindow.fill(utils.WHITE)
             self.map.resetMap()
@@ -91,15 +96,16 @@ class PIDCar():
             is used to draw the direction circle to the correct location.
             """
 
-            offset = self.map.update(self.gameWindow, self.car.rect)
+            offset = self.map.update(self.gameWindow, self.car.rect, move)
             directionLoc = (self.car.rect.centerx + offset[0],
                             self.car.rect.centery + offset[1])
             self.direction.update(self.gameWindow, (directionLoc[0],
                                                     directionLoc[1]))
 
             """testing dirRecticle GIVE IT SOME SPACE"""
-            self.dirReticle.update(self.gameWindow, (directionLoc[0] + rotation[0],
-                                                     directionLoc[1] + rotation[1]))
+            self.dirReticle.update(self.gameWindow,
+                                   (directionLoc[0] + rotation[0],
+                                    directionLoc[1] + rotation[1]))
             pg.display.update()
             self.clock.tick(self.FPS)
 

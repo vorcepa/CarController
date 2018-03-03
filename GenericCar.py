@@ -46,11 +46,14 @@ class CarActive(pg.sprite.Sprite):
         self.image = self.images['0']
         self.rect = self.image.get_rect()
 
-        self.speed = 5
+        self.maxSpeed = 10
 
-    def move(self, xdir, ydir, radian):
-        self.rect.x += xdir*self.speed
-        self.rect.y += ydir*self.speed
+    def move(self, radian):
+        moveX = int(round(self.maxSpeed*math.cos(radian*math.pi), 0))
+        moveY = int(round(self.maxSpeed*math.sin(radian*math.pi), 0))
+
+        self.rect.x += moveX
+        self.rect.y += moveY
 
         if 0 <= radian <= .0833:
             self.image = self.images['0']
@@ -86,6 +89,8 @@ class CarActive(pg.sprite.Sprite):
             self.image = self.images['pi/6']
         elif radian > 1.9167:
             self.image = self.images['0']
+
+        return (int(math.fabs(moveX)), int(math.fabs(moveY)))
 
     def update(self, gameWindow):
         gameWindow.blit(self.image, self.rect)
