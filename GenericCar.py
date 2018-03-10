@@ -46,7 +46,7 @@ class CarActive(pg.sprite.Sprite):
         self.image = self.images['0']
         self.rect = self.image.get_rect()
 
-        self.maxSpeed = 10
+        self.maxSpeed = 5
 
     def move(self, radian):
         moveX = int(round(self.maxSpeed*math.cos(radian*math.pi), 0))
@@ -123,21 +123,6 @@ class DirectionReticle(pg.sprite.Sprite):
 
         self.radian = 0
         self.omega = .015
-
-    def move(self, activeKey):
-        """TESTING.  BE SURE TO CLEAN UP"""
-        if activeKey[pg.K_RIGHT] and not activeKey[pg.K_LEFT]:
-            self.radian += self.omega
-            if self.radian > 2:
-                self.radian = 0
-        elif activeKey[pg.K_LEFT] and not activeKey[pg.K_RIGHT]:
-            self.radian -= self.omega
-            if self.radian < 0:
-                self.radian = 2
-
-        outputX = 125*math.cos(self.radian*math.pi)
-        outputY = 125*math.sin(self.radian*math.pi)
-        return (int(round(outputX, 0)), int(round(outputY, 0)), self.radian)
 
     def update(self, gameWindow, pos):
         colors = [utils.LIGHTBLUE3, utils.TAN1]
