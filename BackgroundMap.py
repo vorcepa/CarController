@@ -1,5 +1,6 @@
 import pygame as pg
 import utils
+import CircleTrack
 
 
 class GameMap():
@@ -24,6 +25,11 @@ class GameMap():
         darkTile.fill(utils.BLACK)
         toggle = True
 
+        road = pg.Surface((20, 20))
+        road.fill(utils.GREY)
+        notRoad = pg.Surface((20, 20))
+        notRoad.fill(utils.GOLD)
+
         for y in range(0, 21):
             for x in range(0, 21):
                 if toggle:
@@ -32,6 +38,13 @@ class GameMap():
                 else:
                     self.mapImage.blit(darkTile, (x*100, y*100))
                     toggle = not toggle
+
+        for j in range(len(CircleTrack.world)):
+            for i in range(len(CircleTrack.world[j])):
+                if CircleTrack.world[j][i] == 0:
+                    self.mapImage.blit(notRoad, (i*20, j*20))
+                else:
+                    self.mapImage.blit(road, (i*20, j*20))
 
     def resetMap(self):
         self.activeMap = self.mapImage.copy()
