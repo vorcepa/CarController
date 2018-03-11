@@ -24,7 +24,7 @@ class PIDCar():
         self.controller = Controller()
         self.sensor1 = Sensor(True, .1665, 175)
         self.sensor2 = Sensor(True, -.1665, 175)
-        self.sensorList = [self.sensor1, self.sensor2]
+        self.sensorList = [self.sensor1]
 
         self.testCD = 24
         self.testCDMax = 24
