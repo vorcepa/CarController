@@ -4,6 +4,11 @@ pg.init()
 
 
 class Controller():
+    """
+    TO DO: self.omega needs to be variable.  A gain variable will
+    change omega.  omega will have an absolute magnitude (ie ±.015)
+    that it cannot exceed.
+    """
     def __init__(self):
         self.radian = 0
         self.omega = .015  # FOR PROPER PID THIS NEEDS TO BE CHANGED TO GAIN
@@ -37,18 +42,28 @@ class Controller():
         sin_theta = math.sin(self.radian*math.pi)
         return (cos_theta, sin_theta, self.radian)
 
-    """Still building.  Eventually the process needs to be:
+    def readSensors(self, sensorTest):
+        """
+        Still building.  Eventually the process needs to be:
         readSensor -> PID control modifies gain based on readSensor ->
         gain is passed to changeDir
-    """
-    def readSensors(self, sensorTest):
+        """
+        if sensorTest is not None:
+            feedback = [None] * len(sensorTest)
+            for i in range(len(sensorTest)):
+                if sensorTest[i] == (0, 0, 0):
+                    feedback[i] = 0
+                elif sensorTest[i] == (128, 128, 128):
+                    feedback[i] = 1
+                else:
+                    feedback[i] = 2
+        else:
+            feedback = [2]
         # activeKey is only here because keypresses can still control the car
         activeKey = pg.key.get_pressed()
-        if sensorTest == (0, 0, 0):
-            feedback = 0
-        elif sensorTest == (128, 128, 128):
-            feedback = 1
-        else:
-            feedback = 2
+
         output = self.changeDir(activeKey, feedback)
         return output
+
+    def PID(self):
+        pass
