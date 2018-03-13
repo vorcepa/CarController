@@ -97,16 +97,17 @@ class CarActive(pg.sprite.Sprite):
 
 
 class DirectionOfMotion(pg.sprite.Sprite):
-    def __init__(self, surface, pos):
+    def __init__(self, gameWindow, pos):
         pg.sprite.Sprite.__init__(self)
 
-        self.surface = surface
+        self.gameWindow = gameWindow
         self.color = utils.WHITE
         self.radius = 125
 
     def update(self, gameWindow, pos):
-        self.image = pg.draw.circle(gameWindow, self.color,
-                                    pos, self.radius, 5)
+#        self.image = pg.draw.circle(gameWindow, self.color,
+#                                    pos, self.radius, 5)
+        pass
 
 
 class DirectionReticle(pg.sprite.Sprite):
@@ -125,17 +126,18 @@ class DirectionReticle(pg.sprite.Sprite):
         self.omega = .015
 
     def update(self, gameWindow, pos):
-        colors = [utils.LIGHTBLUE3, utils.TAN1]
-        retColor = colors[0]
-
-        self.colorSwitchTimer -= 1
-        if self.colorSwitchTimer <= 0:
-            self.Toggle = not self.Toggle
-            self.colorSwitchTimer = self.TimerMax
-        if self.Toggle:
-            retColor = colors[0]
-        elif not self.Toggle:
-            retColor = colors[1]
-
-        self.image = pg.draw.circle(gameWindow, retColor,
-                                    pos, self.radius, 0)
+#        colors = [utils.LIGHTBLUE3, utils.TAN1]
+#        retColor = colors[0]
+#
+#        self.colorSwitchTimer -= 1
+#        if self.colorSwitchTimer <= 0:
+#            self.Toggle = not self.Toggle
+#            self.colorSwitchTimer = self.TimerMax
+#        if self.Toggle:
+#            retColor = colors[0]
+#        elif not self.Toggle:
+#            retColor = colors[1]
+#
+#        self.image = pg.draw.circle(gameWindow, retColor,
+#                                    pos, self.radius, 0)
+        pass
