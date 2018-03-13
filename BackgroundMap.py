@@ -1,10 +1,11 @@
 import pygame as pg
 import utils
-import CircleTrack
+from Maps import Track_Circle, Track_ZigZag
 
 
 class GameMap():
     def __init__(self):
+        self.activeWorld = Track_Circle.world
         self.mapImage = None
         self.activeMap = None
         self.createMap()
@@ -39,9 +40,9 @@ class GameMap():
                     self.mapImage.blit(darkTile, (x*100, y*100))
                     toggle = not toggle
 
-        for j in range(len(CircleTrack.world)):
-            for i in range(len(CircleTrack.world[j])):
-                if CircleTrack.world[j][i] == 0:
+        for j in range(len(self.activeWorld)):
+            for i in range(len(self.activeWorld[j])):
+                if self.activeWorld[j][i] == 0:
                     self.mapImage.blit(notRoad, (i*20, j*20))
                 else:
                     self.mapImage.blit(road, (i*20, j*20))
