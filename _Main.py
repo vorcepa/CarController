@@ -22,9 +22,18 @@ class PIDCar():
                                            (self.car.rect.centerx,
                                             self.car.rect.centery))
         self.controller = Controller()
-        self.sensor1 = Sensor(True, .1665, 175)
-        self.sensor2 = Sensor(True, -.1665, 175)
-        self.sensorList = [self.sensor1]
+        self.sensor1 = Sensor(self.gameWindow,
+                              True, .1665, 165, 1)   # Starts at top right
+        self.sensor2 = Sensor(self.gameWindow,
+                              True, 1.8335, 185, 1)  # Starts at bottom right
+        self.sensor3 = Sensor(self.gameWindow, True,
+                              .9, 115, 1)              # Starts behind center
+        self.sensor4 = Sensor(self.gameWindow, True,
+                              1.1, 115, 1)
+        self.sensorList = [self.sensor1, self.sensor2,
+                           self.sensor3, self.sensor4]
+        self.sensorOffsets = [i.rOffset for i in self.sensorList]
+        self.sensorTest = [None] * len(self.sensorList)
 
         self.testCD = 24
         self.testCDMax = 24
@@ -104,10 +113,14 @@ class PIDCar():
                 i.move(directionLoc, radian)
                 i.update(self.gameWindow)
 
-            # TO DO: Get rid of sensorTest
+            # TO DO: Get rid of or at least rename sensorTest
             # have sensorRead look at self.sensorList
-            sensorTest = self.sensorList[0].update(self.gameWindow)
-            sensorRead = self.controller.readSensors(sensorTest)
+
+            for i in range(len(self.sensorList)):
+                self.sensorTest[i] = self.sensorList[i].update(self.gameWindow)
+            sensorRead = self.controller.readSensors(self.sensorList,
+                                                     self.sensorOffsets,
+                                                     self.sensorTest)
 
             if sensorRead is not None:
                 cos_theta, sin_theta, radian = sensorRead
