@@ -17,6 +17,8 @@ class Controller():
         self.omegaMax = 1000
 
         self.errorCurrent = 0
+        self.testCD = 12
+        self.testCDMax = 12
     """
     testing the logic for control.  To add:
         kp (proportional)
@@ -26,7 +28,6 @@ class Controller():
     """
     def changeDir(self, gain):
         if gain is not 0:
-#            print(gain)
             self.omega += gain
             self.radian += self.omega
             if self.radian > 2:
@@ -60,45 +61,7 @@ class Controller():
         sin_theta = math.sin(self.radian*math.pi)
         return (cos_theta, sin_theta, self.radian)
 
-    def readSensors(self, sensorList, sensorOffsets, sensorTest):
-        """
-        Still building.  Eventually the process needs to be:
-        readSensor -> PID control modifies gain based on readSensor ->
-        gain is passed to changeDir
-        """
-        if sensorTest is not None:
-            feedback = [None] * len(sensorTest)
-            for i in range(len(sensorTest)):
-                if sensorTest[i] is not None:
-                    if sensorTest[i][0] == (utils.GREY):
-                        feedback[i] = 0
-                    elif sensorTest[i][0] == (utils.GOLD):
-                        feedback[i] = 1
-                    else:
-                        feedback[i] = 2
-        else:
-            feedback = [2]
-
-        output = self.PID(sensorList, sensorOffsets, feedback)
-        return output
-
-    def PID(self, sensorList, sensorOffsets, feedback):
-        error = 0
-        for i in range(len(feedback)):
-            if sensorOffsets[i] < 1:
-                if feedback[i] is None:
-                    error += -3
-                else:
-                    feedback[i] = -feedback[i]
-                    error += feedback[i]
-            else:
-                if feedback[i] is None:
-                    error += 3
-                else:
-                    error += feedback[i]
-        kp = .008*error
-        if -.005 < kp < .005:
-            kp = 0
-#        print(kp)
-        output = self.changeDir(kp)
+    def PID(self, colorList):
+        gain = 0
+        output = self.changeDir(gain)
         return output

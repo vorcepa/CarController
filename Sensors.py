@@ -53,13 +53,13 @@ class Sensor(pg.sprite.Sprite):
     def __init__(self, gameWindow, display, rOffset, dOffset, weight):
         pg.sprite.Sprite.__init__(self)
 
+        self.image = pg.Surface([24, 24], pg.SRCALPHA, 32)
+        self.rect = self.image.get_rect()
+
         self.gameWindow = gameWindow
         self.color = utils.WHITE
-        self.x = 24
-        self.y = 24
-        self.centerx = self.x // 2
-        self.centery = self.y // 2
-        self.area = (self.x, self.y)
+
+        self.distSensor = DistanceSensor(gameWindow, True, rOffset, dOffset, weight)
 
         self.display = display
         if not isinstance(self.display, bool):
@@ -73,37 +73,35 @@ class Sensor(pg.sprite.Sprite):
         self.dOffset = dOffset
         if type(self.dOffset) not in (int, float):
             pg.quit()
-            raise TypeError("Expected variable of type int or float, got type {}".format(type(self.dOffset)))            
+            raise TypeError("Expected variable of type int or float, got type {}".format(type(self.dOffset)))
 
         self.testCD = 30
         self.testCDMax = 30
 
     def move(self, directionLoc, radian):
-        self.testCD -= 1
+        distSensorUpdate = self.distSensor.update(self.gameWindow)
+        self.distSensor.move(directionLoc, radian, distSensorUpdate)
+
         radian += self.rOffset
         x = int(round(self.dOffset*math.cos(radian*math.pi), 0))
         y = int(round(self.dOffset*math.sin(radian*math.pi), 0))
-        self.x = directionLoc[0] + x
-        self.y = directionLoc[1] + y
-        self.centerx = self.x + 12
-        self.centery = self.y + 12
-#        if self.testCD <= 0:
-#            self.testCD = self.testCDMax
-#            print(x, self.rect.x)
+        self.rect.x = directionLoc[0] + x
+        self.rect.y = directionLoc[1] + y
 
     def update(self, gameWindow):
         if self.display:
-            self.image = pg.draw.rect(gameWindow, utils.WHITE, (self.x, self.y, 24, 24), 1)
+            gameWindow.blit(self.image, (self.rect.x, self.rect.y))
+            pg.draw.rect(self.image, utils.WHITE, (0, 0, 24, 24), 1)
 
         try:
-            getColor = gameWindow.get_at((self.centerx,
-                                          self.centery))
+            getColor = gameWindow.get_at((self.rect.centerx,
+                                          self.rect.centery))
             return [getColor[:3]]
         except IndexError:
             return
 
 
-class DistanceSensor():
+class DistanceSensor(pg.sprite.Sprite):
     def __init__(self, gameWindow, display, rOffset, dOffset, weight):
         pg.sprite.Sprite.__init__(self)
 
@@ -117,8 +115,11 @@ class DistanceSensor():
 
         self.display = display
         self.rOffset = rOffset
-        self.dOffset = 0
-        self.dOffsetMax = dOffset
+        self.dXOffset = dOffset
+        self.dYOffset = dOffset
+        self.dOGlobalMax = dOffset  # should never change
+        self.dOXLocalMax = dOffset  # should change, but never larger than global
+        self.dOYLocalMax = dOffset  # should change, but never larger than global
         self.weight = weight
 
         self.leftToggle = True
@@ -127,11 +128,12 @@ class DistanceSensor():
         self.downToggle = True
         self.locStore = (self.rect.x, self.rect.y)
 
-        self.CD = 30
-        self.CDMax = 30
+        self.allYellow = False
+
+        self.testCD = 30
+        self.testCDMax = 30
 
     def move(self, directionLoc, radian, test):
-    
         try:
             if test[0] == utils.GOLD and test[1] == utils.GOLD and test[2] == utils.GOLD and test[4] == utils.GOLD:
                 self.upToggle = False
@@ -150,26 +152,53 @@ class DistanceSensor():
             else:
                 self.leftToggle = True
             if test[0] == utils.GOLD and test[1] == utils.GOLD and test[2] == utils.GOLD and test[3] == utils.GOLD and test[4] == utils.GOLD and test[5] == utils.GOLD and test[6] == utils.GOLD and test[7] == utils.GOLD and test[8] == utils.GOLD:
-                self.dOffset = 0
+                self.dXOffset -= 40
+                self.dYOffset -= 40
+                self.allYellow = True
+            else:
+                self.allYellow = False
         except TypeError:
-            self.dOffset = 0
-
-        self.dOffset += 5
-        if self.dOffset >= self.dOffsetMax:
-            self.dOffset = self.dOffsetMax
+            self.dXOffset = self.dYOffset = 0
 
         self.rotate_val = -radian * 180
         radian += self.rOffset
-        x = int(round(self.dOffset*math.cos(radian*math.pi), 0))
-        y = int(round(self.dOffset*math.sin(radian*math.pi), 0))
+
+        if not self.upToggle or not self.downToggle:
+            xmin = abs(directionLoc[0] - self.rect.centerx)
+            self.dOXLocalMax -= 10
+            if self.dOXLocalMax <= xmin:
+                self.dOXLocalMax = xmin
+        else:
+            self.dOXLocalMax = self.dOGlobalMax
+        if not self.leftToggle or not self.rightToggle:
+            ymin = abs(directionLoc[1] - self.rect.centery)
+            self.dOYLocalMax -= 10
+            if self.dOYLocalMax <= ymin:
+                self.dOYLocalMax = ymin
+        else:
+            self.dOYLocalMax = self.dOGlobalMax
+
+        self.dXOffset += 10
+        if self.dXOffset >= self.dOXLocalMax:
+            self.dXOffset = self.dOXLocalMax
+        self.dYOffset += 10
+        if self.dYOffset >= self.dOYLocalMax:
+            self.dYOffset = self.dOYLocalMax
+
+        x = int(round(self.dXOffset*math.cos(radian*math.pi), 0))
+        y = int(round(self.dYOffset*math.sin(radian*math.pi), 0))
 
         self.rect.x = directionLoc[0] + x
         self.rect.y = directionLoc[1] + y
 
+        self.testCD -= 1
+
         diff = (self.rect.x - self.locStore[0],
                 self.rect.y - self.locStore[1])
-#        print(diff)
 
+        if self.allYellow:
+            self.locStore = (self.rect.x, self.rect.y)
+            return
         if diff[0] < 0 and not self.leftToggle:
             self.rect.x = self.locStore[0]
         elif diff[0] > 0 and not self.rightToggle:

@@ -3,7 +3,7 @@ import utils
 from BackgroundMap import GameMap
 from GenericCar import CarActive, DirectionOfMotion, DirectionReticle
 from Controller import Controller
-from Sensors import Sensor, DistanceSensor
+from Sensors import Sensor
 
 
 class PIDCar():
@@ -11,7 +11,7 @@ class PIDCar():
         self.gameWindow = gameWindow
         pg.display.set_caption("Self-driving car")
         self.clock = pg.time.Clock()
-        self.FPS = 20
+        self.FPS = 60
         self.map = GameMap()
         self.car = CarActive()
         self.direction = DirectionOfMotion(self.car.image,
@@ -29,24 +29,12 @@ class PIDCar():
                               .9, 115, 1)              # Starts behind center
         self.sensor4 = Sensor(self.gameWindow, True,
                               1.1, 115, 1)
-        self.sensorList = [self.sensor1, self.sensor2,
-                           self.sensor3, self.sensor4]
+        self.sensorList = [self.sensor1, self.sensor2, self.sensor3, self.sensor4]
         self.sensorOffsets = [i.rOffset for i in self.sensorList]
         self.sensorTest = [None] * len(self.sensorList)
 
-        ###
-        # DISTANCE SENSOR TESTING
-        ###
-
-        self.distSensor1 = DistanceSensor(self.gameWindow,
-                                          True, .5, 100, 1)
-
-        ###
-        # /DISTANCE SENSOR TESTING
-        ###
-
-        self.testCD = 24
-        self.testCDMax = 24
+        self.testCD = 9
+        self.testCDMax = 9
 
     def quitGame(self):
         pg.quit()
@@ -82,6 +70,7 @@ class PIDCar():
             self.clock.tick(self.FPS)
 
     def playGame(self):  # maybe rename later?
+        colorList = []
         self.gotoMenu()
         cos_theta, sin_theta, radian = (0, 0, 0)
 
@@ -116,35 +105,21 @@ class PIDCar():
 
             retLocX = directionLoc[0] + int(round(125*cos_theta, 0))
             retLocY = directionLoc[1] + int(round(125*sin_theta, 0))
-            self.dirReticle.update(self.gameWindow,
-                                   (retLocX, retLocY))
+            self.dirReticle.update(self.gameWindow, (retLocX, retLocY))
 
+            """
+            Sensors move, then the sensors are read.
+            The information from the read sensors is then
+            passed to the PID controller
+            """
             for i in self.sensorList:
                 i.move(directionLoc, radian)
-                i.update(self.gameWindow)
+                colorList.append(i.update(self.gameWindow))
 
-            # TO DO: Get rid of or at least rename sensorTest
-            # have sensorRead look at self.sensorList
+            errorCorrection = self.controller.PID(colorList)
 
-            for i in range(len(self.sensorList)):
-                self.sensorTest[i] = self.sensorList[i].update(self.gameWindow)
-            sensorRead = self.controller.readSensors(self.sensorList,
-                                                     self.sensorOffsets,
-                                                     self.sensorTest)
-
-            if sensorRead is not None:
-                cos_theta, sin_theta, radian = sensorRead
-
-            ###
-            # DISTANCE SENSOR TESTING
-            ###
-
-            test = self.distSensor1.update(self.gameWindow)
-            self.distSensor1.move(directionLoc, radian, test)
-
-            ###
-            # /DISTANCE SENSOR TESTING
-            ###
+            if errorCorrection is not None:
+                cos_theta, sin_theta, radian = errorCorrection
 
             pg.display.update()
             self.clock.tick(self.FPS)
