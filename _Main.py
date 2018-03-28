@@ -3,7 +3,7 @@ import utils
 from BackgroundMap import GameMap
 from GenericCar import CarActive, DirectionOfMotion, DirectionReticle
 from Controller import Controller
-from Sensors import Sensor
+from Sensors import Sensor, DistanceSensor
 
 
 class PIDCar():
@@ -11,8 +11,7 @@ class PIDCar():
         self.gameWindow = gameWindow
         pg.display.set_caption("Self-driving car")
         self.clock = pg.time.Clock()
-        self.FPS = 60
-
+        self.FPS = 20
         self.map = GameMap()
         self.car = CarActive()
         self.direction = DirectionOfMotion(self.car.image,
@@ -34,6 +33,17 @@ class PIDCar():
                            self.sensor3, self.sensor4]
         self.sensorOffsets = [i.rOffset for i in self.sensorList]
         self.sensorTest = [None] * len(self.sensorList)
+
+        ###
+        # DISTANCE SENSOR TESTING
+        ###
+
+        self.distSensor1 = DistanceSensor(self.gameWindow,
+                                          True, .5, 100, 1)
+
+        ###
+        # /DISTANCE SENSOR TESTING
+        ###
 
         self.testCD = 24
         self.testCDMax = 24
@@ -124,6 +134,17 @@ class PIDCar():
 
             if sensorRead is not None:
                 cos_theta, sin_theta, radian = sensorRead
+
+            ###
+            # DISTANCE SENSOR TESTING
+            ###
+
+            test = self.distSensor1.update(self.gameWindow)
+            self.distSensor1.move(directionLoc, radian, test)
+
+            ###
+            # /DISTANCE SENSOR TESTING
+            ###
 
             pg.display.update()
             self.clock.tick(self.FPS)

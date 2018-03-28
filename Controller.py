@@ -26,7 +26,7 @@ class Controller():
     """
     def changeDir(self, gain):
         if gain is not 0:
-            print(gain)
+#            print(gain)
             self.omega += gain
             self.radian += self.omega
             if self.radian > 2:
