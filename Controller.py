@@ -13,12 +13,11 @@ class Controller():
     def __init__(self):
         self.radian = 0
         self.omega = 0
-        self.omegaMin = -1000
-        self.omegaMax = 1000
+        self.omegaMin = -.1
+        self.omegaMax = .1
 
-        self.errorCurrent = 0
-        self.testCD = 12
-        self.testCDMax = 12
+        self.testCD = 30
+        self.testCDMax = 30
     """
     testing the logic for control.  To add:
         kp (proportional)
@@ -27,19 +26,18 @@ class Controller():
     Not sure if these should be individual methods.
     """
     def changeDir(self, gain):
-        if gain is not 0:
-            self.omega += gain
-            self.radian += self.omega
-            if self.radian > 2:
-                self.radian = 0
-            elif self.radian < 0:
-                self.radian = 2
-        else:
-            self.omega = 0
+        self.omega += gain
         if self.omega > self.omegaMax:
             self.omega = self.omegaMax
         elif self.omega < self.omegaMin:
             self.omega = self.omegaMin
+
+        self.radian += self.omega
+        if self.radian > 2:
+            self.radian = 0
+        elif self.radian < 0:
+            self.radian = 2
+
         # activeKey is only here because keypresses can still control the car
         activeKey = pg.key.get_pressed()
         if activeKey[pg.K_RIGHT] and not activeKey[pg.K_LEFT]:
@@ -61,7 +59,14 @@ class Controller():
         sin_theta = math.sin(self.radian*math.pi)
         return (cos_theta, sin_theta, self.radian)
 
-    def PID(self, colorList):
+    def PID(self, colorList, rOffsets, colorPos, distPos):
         gain = 0
+        errorX = 0
+        errorY = 0
+
+        for i, (colorList, rOffsets) in enumerate(zip(colorList, rOffsets)):
+            errorX = colorPos[i][0] - distPos[i][0]
+            errorY = colorPos[i][1] - distPos[i][1]
+
         output = self.changeDir(gain)
         return output
