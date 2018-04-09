@@ -11,7 +11,7 @@ class PIDCar():
         self.gameWindow = gameWindow
         pg.display.set_caption("Self-driving car")
         self.clock = pg.time.Clock()
-        self.FPS = 60
+        self.FPS = 20
         self.map = GameMap()
         self.car = CarActive()
         self.direction = DirectionOfMotion(self.car.image,
@@ -21,15 +21,15 @@ class PIDCar():
                                            (self.car.rect.centerx,
                                             self.car.rect.centery))
         self.controller = Controller()
-        self.sensor1 = Sensor(self.gameWindow,
-                              True, .1665, 165, 1)   # Starts at top right
+        # self.sensor1 = Sensor(self.gameWindow,
+        #                       True, .1665, 165, 1)   # Starts at top right
         self.sensor2 = Sensor(self.gameWindow,
                               True, 1.8335, 185, 1)  # Starts at bottom right
-        self.sensor3 = Sensor(self.gameWindow, True,
-                              .9, 115, 1)              # Starts behind center
-        self.sensor4 = Sensor(self.gameWindow, True,
-                              1.1, 115, 1)
-        self.sensorList = [self.sensor1, self.sensor2, self.sensor3, self.sensor4]
+        # self.sensor3 = Sensor(self.gameWindow, True,
+        #                       .9, 115, 1)              # Starts behind center
+        # self.sensor4 = Sensor(self.gameWindow, True,
+        #                       1.1, 115, 1)
+        self.sensorList = [self.sensor2]
         self.sensorOffsets = [i.rOffset for i in self.sensorList]
         self.sensorTest = [None] * len(self.sensorList)
 
@@ -70,12 +70,19 @@ class PIDCar():
             self.clock.tick(self.FPS)
 
     def playGame(self):  # maybe rename later?
-        colorList = []
         self.gotoMenu()
         cos_theta, sin_theta, radian = (0, 0, 0)
 
         gameActive = True
+        rOffsets = []
+
+        for i in self.sensorList:
+            rOffsets.append(i.rOffset)
         while gameActive:
+            sensorRead = []
+            colorPos = []
+            distPos = []
+
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     gameActive = False
@@ -114,9 +121,11 @@ class PIDCar():
             """
             for i in self.sensorList:
                 i.move(directionLoc, radian)
-                colorList.append(i.update(self.gameWindow))
+                sensorRead.append(i.update(gameWindow))
+                colorPos.append((i.rect.centerx, i.rect.centery))
+                distPos.append((i.distSensor.rect.centerx, i.distSensor.rect.centery))
 
-            errorCorrection = self.controller.PID(colorList)
+            errorCorrection = self.controller.PID(sensorRead, rOffsets, colorPos, distPos)
 
             if errorCorrection is not None:
                 cos_theta, sin_theta, radian = errorCorrection
