@@ -11,7 +11,7 @@ class PIDCar():
         self.gameWindow = gameWindow
         pg.display.set_caption("Self-driving car")
         self.clock = pg.time.Clock()
-        self.FPS = 20
+        self.FPS = 8
         self.map = GameMap()
         self.car = CarActive()
         self.direction = DirectionOfMotion(self.car.image,
