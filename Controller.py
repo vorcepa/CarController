@@ -59,14 +59,15 @@ class Controller():
         sin_theta = math.sin(self.radian*math.pi)
         return (cos_theta, sin_theta, self.radian)
 
-    def PID(self, colorList, rOffsets, colorPos, distPos):
+    def PID(self, sensorInfo, rOffsets):
         gain = 0
-        errorX = 0
-        errorY = 0
+        if abs(sensorInfo[2][0]) >= abs(sensorInfo[2][1]):
+            error = abs(sensorInfo[2][0])
+        else:
+            error = abs(sensorInfo[2][1])
 
-        for i, (colorList, rOffsets) in enumerate(zip(colorList, rOffsets)):
-            errorX = colorPos[i][0] - distPos[i][0]
-            errorY = colorPos[i][1] - distPos[i][1]
+        if sensorInfo[0] != utils.GREY:
+            gain += error/10000
 
         output = self.changeDir(gain)
         return output
