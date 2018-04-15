@@ -11,7 +11,7 @@ class PIDCar():
         self.gameWindow = gameWindow
         pg.display.set_caption("Self-driving car")
         self.clock = pg.time.Clock()
-        self.FPS = 8
+        self.FPS = 60
         self.map = GameMap()
         self.car = CarActive()
         self.direction = DirectionOfMotion(self.car.image,
@@ -120,12 +120,12 @@ class PIDCar():
             passed to the PID controller
             """
             for i in self.sensorList:
-                i.move(directionLoc, radian)
-                sensorRead.append(i.update(gameWindow))
+                test_var_name = i.move(directionLoc, radian)
+                sensorRead.append(i.update())
                 colorPos.append((i.rect.centerx, i.rect.centery))
-                distPos.append((i.distSensor.rect.centerx, i.distSensor.rect.centery))
+                # distPos.append((i.distSensor.rect.centerx, i.distSensor.rect.centery))
 
-            errorCorrection = self.controller.PID(sensorRead, rOffsets, colorPos, distPos)
+            errorCorrection = self.controller.PID(test_var_name, rOffsets)
 
             if errorCorrection is not None:
                 cos_theta, sin_theta, radian = errorCorrection
