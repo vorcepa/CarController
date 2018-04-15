@@ -60,7 +60,7 @@ class Sensor(pg.sprite.Sprite):
         self.gameWindow = gameWindow
         self.color = utils.WHITE
 
-        self.distSensor = DistanceSensor(gameWindow, display, rOffset, dOffset, weight)
+        # self.distSensor = DistanceSensor(gameWindow, display, rOffset, dOffset, weight)
 
         self.display = display
         if not isinstance(self.display, bool):
@@ -79,175 +79,213 @@ class Sensor(pg.sprite.Sprite):
         self.testCD = 30
         self.testCDMax = 30
 
-    def move(self, directionLoc, radian):
-        colorLoc = (self.rect.x, self.rect.y)
-        dColors = self.distSensor.update(self.gameWindow)
-        self.distSensor.move(directionLoc, radian, dColors, colorLoc, self.getColor)
+    def __findNotRoad(self, directionLoc, target):
+        self.update()
 
+        xdiff_init = target[0] - directionLoc[0]
+        ydiff_init = target[1] - directionLoc[1]
+        xdiff = self.rect.x - target[0]
+        ydiff = self.rect.y - target[1]
+
+        x_float = directionLoc[0]
+        y_float = directionLoc[1]
+
+        dx = xdiff_init / 400
+        dy = ydiff_init / 300
+
+        while self.getColor != utils.GOLD:
+            x_float += dx
+            y_float += dy
+
+            if not self.rect.x == target[0]:
+                self.rect.x = int(round(x_float))
+            if not self.rect.y == target[1]:
+                self.rect.y = int(round(y_float))
+
+            xdiff = self.rect.x - target[0]
+            ydiff = self.rect.y - target[1]
+
+            if self.rect.x == target[0] and self.rect.y == target[1]:
+                if self.display:
+                    self.gameWindow.blit(self.image, (self.rect.x, self.rect.y))
+                    pg.draw.rect(self.image, utils.WHITE, (0, 0, 24, 24), 1)
+
+                return (self.getColor[:3], (self.rect.x, self.rect.y), (xdiff, ydiff))
+
+            try:
+                self.getColor = self.gameWindow.get_at((self.rect.centerx, self.rect.centery))
+            except IndexError:
+                self.getColor = utils.GOLD
+
+        if self.display:
+            self.gameWindow.blit(self.image, (self.rect.x, self.rect.y))
+            pg.draw.rect(self.image, utils.WHITE, (0, 0, 24, 24), 1)
+
+        return (self.getColor[:3], (self.rect.x, self.rect.y), (xdiff, ydiff))
+
+    def move(self, directionLoc, radian):
         radian += self.rOffset
         x = int(round(self.dOffset*math.cos(radian*math.pi), 0))
         y = int(round(self.dOffset*math.sin(radian*math.pi), 0))
-        self.rect.x = directionLoc[0] + x
-        self.rect.y = directionLoc[1] + y
+        self.rect.x = directionLoc[0]
+        self.rect.y = directionLoc[1]
 
-    def update(self, gameWindow):
-        if self.display:
-            gameWindow.blit(self.image, (self.rect.x, self.rect.y))
-            pg.draw.rect(self.image, utils.WHITE, (0, 0, 24, 24), 1)
+        target = (directionLoc[0] + x, directionLoc[1] + y)
+        notRoadDistance = self.__findNotRoad(directionLoc, target)
+        return notRoadDistance
+
+    def update(self):
+        # if self.display:
+        #     gameWindow.blit(self.image, (self.rect.x, self.rect.y))
+        #     pg.draw.rect(self.image, utils.WHITE, (0, 0, 24, 24), 1)
 
         try:
-            self.getColor = gameWindow.get_at((self.rect.centerx, self.rect.centery))
+            self.getColor = self.gameWindow.get_at((self.rect.centerx, self.rect.centery))
             return self.getColor[:3]
         except IndexError:
             self.getColor = utils.GOLD
             return self.getColor
 
 
-class DistanceSensor(pg.sprite.Sprite):
-    def __init__(self, gameWindow, display, rOffset, dOffset, weight):
-        pg.sprite.Sprite.__init__(self)
-
-        self.image = pg.Surface([24, 24], pg.SRCALPHA, 32)
-        self.rect = self.image.get_rect()
-        self.rect.x = 200
-        self.rect.y = 200
-
-        self.gameWindow = gameWindow
-        self.display = display
-        self.color = utils.BLACK
-
-        self.weight = weight
-        self.rOffset = rOffset  # radial offset
-
-        # linear offsets
-        self.GLOBAL_OFFSET = dOffset
-        self.x_local_offset = dOffset
-        self.y_local_offset = dOffset  # x and y can vary between 0 and global offset
-
-        self.upToggle = True
-        self.downToggle = True
-        self.leftToggle = True
-        self.rightToggle = True
-
-        self.testCD = 30
-        self.testCDMax = 30
-
-    @staticmethod
-    def __sensor_in_car(dColors):
-        for key in dColors:
-            if dColors[key][2] > 200:
-                return True
-        return False
-
-    @staticmethod
-    def __all_yellow(dColors):
-        try:
-            for key in dColors:
-                if dColors[key] != utils.GOLD:
-                    return False
-            return True
-        except TypeError:
-            return True
-
-    def __offroad_toggles(self, dColors):
-        if dColors['center'] == utils.GOLD:
-            if dColors['top left'] == utils.GOLD and dColors['top mid'] == utils.GOLD and dColors['top right'] == utils.GOLD:
-                self.upToggle = False
-            else:
-                self.upToggle = True
-
-            if dColors['bot left'] == utils.GOLD and dColors['bot mid'] == utils.GOLD and dColors['bot right'] == utils.GOLD:
-                self.downToggle = False
-            else:
-                self.downToggle = True
-
-            if dColors['top left'] == utils.GOLD and dColors['center left'] == utils.GOLD and dColors['bot left'] == utils.GOLD:
-                self.leftToggle = False
-            else:
-                self.leftToggle = True
-
-            if dColors['top right'] == utils.GOLD and dColors['center right'] == utils.GOLD and dColors['bot right'] == utils.GOLD:
-                self.rightToggle = False
-            else:
-                self.rightToggle = True
-        else:
-            self.upToggle = True
-            self.downToggle = True
-            self.leftToggle = True
-            self.rightToggle = True
-
-    def move(self, directionLoc, radian, dColors, colorLoc, colorSensor):
-        radian += self.rOffset
-        self.__offroad_toggles(dColors)
-
-        color_xdiff = self.rect.x - colorLoc[0]
-        color_ydiff = self.rect.y - colorLoc[1]
-        if colorSensor == utils.GREY:
-            self.rect.x = colorLoc[0]
-            self.rect.y = colorLoc[1]
-        else:
-            # straight road
-            if self.upToggle and self.downToggle:
-                self.rect.y -= int(round(color_ydiff/2, 0))
-                if not self.leftToggle or not self.rightToggle:
-                    self.rect.y -= int(round(color_ydiff/2, 0))
-            if self.leftToggle and self.rightToggle:
-                self.rect.x -= int(round(color_xdiff/2, 0))
-                if not self.upToggle or not self.downToggle:
-                    self.rect.x -= int(round(color_xdiff/2, 0))
-
-            if not self.upToggle and not self.rightToggle and color_ydiff < 0:
-                self.rect.y += 20
-            if not self.downToggle and not self.rightToggle:
-                self.rect.y -= 20
-
-        self.testCD -= 1
-        if self.testCD <= 15:
-            self.testCD = self.testCDMax
-            print(color_xdiff, color_ydiff)
-
-
-        if self.__sensor_in_car(dColors):
-            self.rect.x -= int(color_xdiff/10)
-            self.rect.y -= int(color_ydiff/10)
-
-        # while self.__all_yellow(dColors):
-        #     self.rect.y += 24
-        #     if self.rect.y > 600:
-        #         self.rect.y = 0
-        #         self.rect.x += 24
-        #         if self.rect.x > 800:
-        #             self.rect.x = 0
-        #     dColors = self.update(self.gameWindow)
-
-        """
-        4/9/18
-        TO DO: Re-implement sensor behaviour.  Make it work more gooder.
-        """
-
-    def update(self, gameWindow):
-        if self.display:
-            gameWindow.blit(self.image, (self.rect.x, self.rect.y))
-            pg.draw.rect(self.image, self.color, (0, 0, 24, 24), 1)
-
-        try:
-            topLeft = gameWindow.get_at((self.rect.x + 1, self.rect.top + 1))
-            topMid = gameWindow.get_at((self.rect.centerx, self.rect.top + 1))
-            topRight = gameWindow.get_at((self.rect.right, self.rect.top))
-            centerLeft = gameWindow.get_at((self.rect.x + 1, self.rect.centery))
-            center = gameWindow.get_at((self.rect.centerx, self.rect.centery))
-            centerRight = gameWindow.get_at((self.rect.right, self.rect.centery))
-            botLeft = gameWindow.get_at((self.rect.x, self.rect.bottom))
-            botMid = gameWindow.get_at((self.rect.centerx, self.rect.bottom))
-            botRight = gameWindow.get_at((self.rect.right, self.rect.bottom))
-
-            dColors = {'top left': topLeft[:3], 'top mid': topMid[:3], 'top right': topRight[:3],
-                         'center left':centerLeft[:3], 'center': center[:3], 'center right': centerRight[:3],
-                         'bot left': botLeft[:3], 'bot mid': botMid[:3], 'bot right': botRight[:3]}
-            return dColors
-
-        except IndexError:
-            dColors = {'top left': utils.GOLD, 'top mid': utils.GOLD, 'top right': utils.GOLD,
-                       'center left': utils.GOLD, 'center': utils.GOLD, 'center right': utils.GOLD,
-                       'bot left': utils.GOLD, 'bot mid': utils.GOLD, 'bot right': utils.GOLD}
-            return dColors
+# class DistanceSensor(pg.sprite.Sprite):
+#     def __init__(self, gameWindow, display, rOffset, dOffset, weight):
+#         pg.sprite.Sprite.__init__(self)
+#
+#         self.image = pg.Surface([24, 24], pg.SRCALPHA, 32)
+#         self.rect = self.image.get_rect()
+#         self.rect.x = 200
+#         self.rect.y = 200
+#
+#         self.gameWindow = gameWindow
+#         self.display = display
+#         self.color = utils.BLACK
+#
+#         self.weight = weight
+#         self.rOffset = rOffset  # radial offset
+#
+#         # linear offsets
+#         self.GLOBAL_OFFSET = dOffset
+#         self.x_local_offset = dOffset
+#         self.y_local_offset = dOffset  # x and y can vary between 0 and global offset
+#
+#         self.upToggle = True
+#         self.downToggle = True
+#         self.leftToggle = True
+#         self.rightToggle = True
+#
+#         self.testCD = 30
+#         self.testCDMax = 30
+#
+#     @staticmethod
+#     def __sensor_in_car(dColors):
+#         for key in dColors:
+#             if dColors[key][2] > 200:
+#                 return True
+#         return False
+#
+#     @staticmethod
+#     def __all_yellow(dColors):
+#         try:
+#             for key in dColors:
+#                 if dColors[key] != utils.GOLD:
+#                     return False
+#             return True
+#         except TypeError:
+#             return True
+#
+#     def __offroad_toggles(self, dColors):
+#         if dColors['center'] == utils.GOLD:
+#             if dColors['top left'] == utils.GOLD and dColors['top mid'] == utils.GOLD and dColors['top right'] == utils.GOLD:
+#                 self.upToggle = False
+#             else:
+#                 self.upToggle = True
+#
+#             if dColors['bot left'] == utils.GOLD and dColors['bot mid'] == utils.GOLD and dColors['bot right'] == utils.GOLD:
+#                 self.downToggle = False
+#             else:
+#                 self.downToggle = True
+#
+#             if dColors['top left'] == utils.GOLD and dColors['center left'] == utils.GOLD and dColors['bot left'] == utils.GOLD:
+#                 self.leftToggle = False
+#             else:
+#                 self.leftToggle = True
+#
+#             if dColors['top right'] == utils.GOLD and dColors['center right'] == utils.GOLD and dColors['bot right'] == utils.GOLD:
+#                 self.rightToggle = False
+#             else:
+#                 self.rightToggle = True
+#         else:
+#             self.upToggle = True
+#             self.downToggle = True
+#             self.leftToggle = True
+#             self.rightToggle = True
+#
+#     def move(self, directionLoc, radian, dColors, colorLoc, colorSensor, debugger_temp):
+#         radian += self.rOffset
+#         self.__offroad_toggles(dColors)
+#
+#         color_xdiff = self.rect.x - colorLoc[0]
+#         color_ydiff = self.rect.y - colorLoc[1]
+#         if colorSensor == utils.GREY:
+#             self.rect.x = colorLoc[0]
+#             self.rect.y = colorLoc[1]
+#         else:
+#             # straight road
+#             if self.upToggle and self.downToggle:
+#                 self.rect.y -= int(round(color_ydiff/2, 0))
+#                 if not self.leftToggle or not self.rightToggle:
+#                     self.rect.y -= int(round(color_ydiff/2, 0))
+#             if self.leftToggle and self.rightToggle:
+#                 self.rect.x -= int(round(color_xdiff/2, 0))
+#                 if not self.upToggle or not self.downToggle:
+#                     self.rect.x -= int(round(color_xdiff/2, 0))
+#
+#             if not self.upToggle and not self.rightToggle:
+#                 self.rect.y += 20
+#             if not self.downToggle and not self.rightToggle:
+#                 self.rect.y -= 20
+#
+#         if self.__sensor_in_car(dColors):
+#             self.rect.x -= int(color_xdiff/10)
+#             self.rect.y -= int(color_ydiff/10)
+#
+#         # while self.__all_yellow(dColors):
+#         #     self.rect.y += 24
+#         #     if self.rect.y > 600:
+#         #         self.rect.y = 0
+#         #         self.rect.x += 24
+#         #         if self.rect.x > 800:
+#         #             self.rect.x = 0
+#         #     dColors = self.update(self.gameWindow)
+#
+#         """
+#         4/9/18
+#         TO DO: Re-implement sensor behaviour.  Make it work more gooder.
+#         """
+#
+#     def update(self, gameWindow):
+#         if self.display:
+#             gameWindow.blit(self.image, (self.rect.x, self.rect.y))
+#             pg.draw.rect(self.image, self.color, (0, 0, 24, 24), 1)
+#
+#         try:
+#             topLeft = gameWindow.get_at((self.rect.x + 1, self.rect.top + 1))
+#             topMid = gameWindow.get_at((self.rect.centerx, self.rect.top + 1))
+#             topRight = gameWindow.get_at((self.rect.right, self.rect.top))
+#             centerLeft = gameWindow.get_at((self.rect.x + 1, self.rect.centery))
+#             center = gameWindow.get_at((self.rect.centerx, self.rect.centery))
+#             centerRight = gameWindow.get_at((self.rect.right, self.rect.centery))
+#             botLeft = gameWindow.get_at((self.rect.x, self.rect.bottom))
+#             botMid = gameWindow.get_at((self.rect.centerx, self.rect.bottom))
+#             botRight = gameWindow.get_at((self.rect.right, self.rect.bottom))
+#
+#             dColors = {'top left': topLeft[:3], 'top mid': topMid[:3], 'top right': topRight[:3],
+#                          'center left':centerLeft[:3], 'center': center[:3], 'center right': centerRight[:3],
+#                          'bot left': botLeft[:3], 'bot mid': botMid[:3], 'bot right': botRight[:3]}
+#             return dColors
+#
+#         except IndexError:
+#             dColors = {'top left': utils.GOLD, 'top mid': utils.GOLD, 'top right': utils.GOLD,
+#                        'center left': utils.GOLD, 'center': utils.GOLD, 'center right': utils.GOLD,
+#                        'bot left': utils.GOLD, 'bot mid': utils.GOLD, 'bot right': utils.GOLD}
+#             return dColors
