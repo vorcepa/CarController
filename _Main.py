@@ -21,15 +21,13 @@ class PIDCar():
                                            (self.car.rect.centerx,
                                             self.car.rect.centery))
         self.controller = Controller()
-        # self.sensor1 = Sensor(self.gameWindow,
-        #                       True, .1665, 165, 1)   # Starts at top right
-        self.sensor2 = Sensor(self.gameWindow,
-                              True, 1.8335, 185, 1)  # Starts at bottom right
+        self.sensor0 = Sensor(self.gameWindow, True, .1665, 165, 1)   # Starts at top right
+        self.sensor1 = Sensor(self.gameWindow, True, 1.8335, 165, 1)  # Starts at bottom right
         # self.sensor3 = Sensor(self.gameWindow, True,
         #                       .9, 115, 1)              # Starts behind center
         # self.sensor4 = Sensor(self.gameWindow, True,
         #                       1.1, 115, 1)
-        self.sensorList = [self.sensor2]
+        self.sensorList = [self.sensor0, self.sensor1]
         self.sensorOffsets = [i.rOffset for i in self.sensorList]
         self.sensorTest = [None] * len(self.sensorList)
 
@@ -58,9 +56,7 @@ class PIDCar():
                         self.quitGame()
 
             self.gameWindow.fill(utils.WHITE)
-            text = utils.getFont(size=64,
-                                 style='bold').render("Self-driving Car",
-                                                      False, utils.BLACK)
+            text = utils.getFont(size=64, style='bold').render("Self-driving Car", False, utils.BLACK)
             textRect = text.get_rect()
             textRect.center = self.gameWindow.get_rect().center
             textRect.y -= 250
@@ -81,7 +77,6 @@ class PIDCar():
         while gameActive:
             sensorRead = []
             colorPos = []
-            distPos = []
 
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -94,7 +89,6 @@ class PIDCar():
 
             self.gameWindow.fill(utils.WHITE)
             self.map.resetMap()
-
             self.car.update(self.map.activeMap)
 
             """
@@ -120,18 +114,18 @@ class PIDCar():
             passed to the PID controller
             """
             for i in self.sensorList:
-                test_var_name = i.move(directionLoc, radian)
-                sensorRead.append(i.update())
+                sensorRead.append(i.move(directionLoc, radian))
                 colorPos.append((i.rect.centerx, i.rect.centery))
-                # distPos.append((i.distSensor.rect.centerx, i.distSensor.rect.centery))
 
-            errorCorrection = self.controller.PID(test_var_name, rOffsets)
+            errorCorrection = self.controller.PID(sensorRead, rOffsets, radian)
 
             if errorCorrection is not None:
                 cos_theta, sin_theta, radian = errorCorrection
 
             pg.display.update()
             self.clock.tick(self.FPS)
+
+            print(radian)
 
         self.quitGame()
 
