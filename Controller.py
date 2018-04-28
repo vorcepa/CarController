@@ -15,16 +15,11 @@ class Controller():
         self.omega = 0
         self.omegaMin = -.1
         self.omegaMax = .1
+        self.SET_POINT = 45
 
         self.testCD = 30
         self.testCDMax = 30
-    """
-    testing the logic for control.  To add:
-        kp (proportional)
-        ki (integral)
-        kd (derivative)
-    Not sure if these should be individual methods.
-    """
+
     def changeDir(self, gain):
         self.omega += gain
         if self.omega > self.omegaMax:
@@ -41,33 +36,42 @@ class Controller():
         # activeKey is only here because keypresses can still control the car
         activeKey = pg.key.get_pressed()
         if activeKey[pg.K_RIGHT] and not activeKey[pg.K_LEFT]:
-            self.omega = .015
+            self.omega = -.015
             self.radian += self.omega
             if self.radian > 2:
                 self.radian = 0
         elif activeKey[pg.K_LEFT] and not activeKey[pg.K_RIGHT]:
-            self.omega = -.015
+            self.omega = .015
             self.radian += self.omega
-            if self.radian < 0:
-                self.radian = 2
+            if self.radian > 2:
+                self.radian = 0
         else:
             self.omega = 0
             self.radian += self.omega
-        
 
         cos_theta = math.cos(self.radian*math.pi)
         sin_theta = math.sin(self.radian*math.pi)
         return (cos_theta, sin_theta, self.radian)
 
-    def PID(self, sensorInfo, rOffsets):
+    def PID(self, sensorInfo, rOffsets, radian):
         gain = 0
-        if abs(sensorInfo[2][0]) >= abs(sensorInfo[2][1]):
-            error = abs(sensorInfo[2][0])
-        else:
-            error = abs(sensorInfo[2][1])
+        slope = []
 
-        if sensorInfo[0] != utils.GREY:
-            gain += error/10000
+        for i in range(len(sensorInfo)):
+            if sensorInfo[i][3] is None:
+                continue
+
+            if 0.0 < rOffsets[i] < 1.0:
+                dy = sensorInfo[i][3][1] - sensorInfo[i][2][1]
+                dx = sensorInfo[i][3][0] - sensorInfo[i][2][0]
+            else:
+                dy = sensorInfo[i][3][1] - sensorInfo[i][2][1]
+                dx = -(sensorInfo[i][3][0] - sensorInfo[i][2][0])
+
+            try:
+                slope.append(math.atan(dy/dx))
+            except ZeroDivisionError:
+                slope.append(math.copysign(math.atan(1000), dy))
 
         output = self.changeDir(gain)
         return output
