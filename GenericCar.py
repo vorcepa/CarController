@@ -50,7 +50,7 @@ class CarActive(pg.sprite.Sprite):
 
     def move(self, radian):
         moveX = int(round(self.maxSpeed*math.cos(radian*math.pi), 0))
-        moveY = int(round(self.maxSpeed*math.sin(radian*math.pi), 0))
+        moveY = -int(round(self.maxSpeed*math.sin(radian*math.pi), 0))
 
         self.rect.x += moveX
         self.rect.y += moveY
@@ -58,35 +58,35 @@ class CarActive(pg.sprite.Sprite):
         if 0 <= radian <= .0833:
             self.image = self.images['0']
         elif .0833 < radian <= .2055:
-            self.image = self.images['11pi/6']
+            self.image = self.images['pi/6']
         elif .2055 < radian <= .2944:
-            self.image = self.images['7pi/4']
+            self.image = self.images['pi/4']
         elif .2944 < radian <= .4166:
-            self.image = self.images['5pi/3']
+            self.image = self.images['pi/3']
         elif .4166 < radian <= .5833:
-            self.image = self.images['3pi/2']
+            self.image = self.images['pi/2']
         elif .5833 < radian <= .7056:
-            self.image = self.images['4pi/3']
+            self.image = self.images['2pi/3']
         elif .7056 < radian <= .7889:
-            self.image = self.images['5pi/4']
+            self.image = self.images['3pi/4']
         elif .7889 < radian <= .9167:
-            self.image = self.images['7pi/6']
+            self.image = self.images['5pi/6']
         elif .9167 < radian <= 1.0833:
             self.image = self.images['pi']
         elif 1.0833 < radian <= 1.2111:
-            self.image = self.images['5pi/6']
+            self.image = self.images['7pi/6']
         elif 1.2111 < radian <= 1.2889:
-            self.image = self.images['3pi/4']
+            self.image = self.images['5pi/4']
         elif 1.2889 < radian <= 1.4167:
-            self.image = self.images['2pi/3']
+            self.image = self.images['4pi/3']
         elif 1.4167 < radian <= 1.5833:
-            self.image = self.images['pi/2']
+            self.image = self.images['3pi/2']
         elif 1.5833 < radian <= 1.7056:
-            self.image = self.images['pi/3']
+            self.image = self.images['5pi/3']
         elif 1.7056 < radian <= 1.7944:
-            self.image = self.images['pi/4']
+            self.image = self.images['7pi/4']
         elif 1.7944 < radian <= 1.9167:
-            self.image = self.images['pi/6']
+            self.image = self.images['11pi/6']
         elif radian > 1.9167:
             self.image = self.images['0']
 
