@@ -1,4 +1,5 @@
 import pygame as pg
+import numpy as np
 import math
 import utils
 pg.init()
@@ -19,6 +20,25 @@ class Controller():
 
         self.testCD = 30
         self.testCDMax = 30
+
+    def __get_slope(self, sensorInfo):
+        slope = []
+
+        for i in range(len(sensorInfo)):
+            if sensorInfo[i][3] is not None:
+                dx = sensorInfo[i][2][0] - sensorInfo[i][3][0]
+                dy = sensorInfo[i][2][1] - sensorInfo[i][3][1]
+            else:
+                dx = dy = None
+
+            if dx is not None:
+                get_arctan = np.arctan2(dy, dx)
+                if get_arctan < 0:
+                    get_arctan = 2*math.pi + get_arctan
+
+                slope.append(get_arctan/math.pi)
+
+        return slope
 
     def changeDir(self, gain):
         self.omega += gain
@@ -55,23 +75,9 @@ class Controller():
 
     def PID(self, sensorInfo, rOffsets, radian):
         gain = 0
-        slope = []
 
-        for i in range(len(sensorInfo)):
-            if sensorInfo[i][3] is None:
-                continue
-
-            if 0.0 < rOffsets[i] < 1.0:
-                dy = sensorInfo[i][3][1] - sensorInfo[i][2][1]
-                dx = sensorInfo[i][3][0] - sensorInfo[i][2][0]
-            else:
-                dy = sensorInfo[i][3][1] - sensorInfo[i][2][1]
-                dx = -(sensorInfo[i][3][0] - sensorInfo[i][2][0])
-
-            try:
-                slope.append(math.atan(dy/dx))
-            except ZeroDivisionError:
-                slope.append(math.copysign(math.atan(1000), dy))
+        slope = self.__get_slope(sensorInfo)
+        print(slope)
 
         output = self.changeDir(gain)
         return output
