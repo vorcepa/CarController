@@ -125,8 +125,6 @@ class PIDCar():
             pg.display.update()
             self.clock.tick(self.FPS)
 
-            print(radian)
-
         self.quitGame()
 
 
