@@ -27,7 +27,7 @@ class Controller():
         for i in range(len(sensorInfo)):
             if sensorInfo[i][3] is not None:
                 dx = sensorInfo[i][2][0] - sensorInfo[i][3][0]
-                dy = sensorInfo[i][2][1] - sensorInfo[i][3][1]
+                dy = sensorInfo[i][3][1] - sensorInfo[i][2][1]
             else:
                 dx = dy = None
 
@@ -35,10 +35,25 @@ class Controller():
                 get_arctan = np.arctan2(dy, dx)
                 if get_arctan < 0:
                     get_arctan = 2*math.pi + get_arctan
-
                 slope.append(get_arctan/math.pi)
 
         return slope
+
+    def __get_error(self, slope, radian):
+        errors = []
+
+        for i in slope:
+            sp_1 = i - radian
+
+            if i > radian:
+                sp_2 = radian + (2 - i)
+            else:
+                sp_2 = i + (2 - radian)
+
+            get_min = min([sp_1, sp_2], key=abs)
+            errors.append(get_min)
+
+        return max(errors, key=abs)
 
     def changeDir(self, gain):
         self.omega += gain
@@ -74,10 +89,15 @@ class Controller():
         return (cos_theta, sin_theta, self.radian)
 
     def PID(self, sensorInfo, rOffsets, radian):
-        gain = 0
+        error = 0
 
         slope = self.__get_slope(sensorInfo)
-        print(slope)
+        if slope != []:
+            error = self.__get_error(slope, radian)
+
+        k_p = -abs(.05*error)
+        gain = k_p
+        print(gain)
 
         output = self.changeDir(gain)
         return output
