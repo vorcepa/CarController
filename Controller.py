@@ -14,14 +14,13 @@ class Controller():
     def __init__(self):
         self.radian = 0
         self.omega = 0
-        self.omegaMin = -.1
-        self.omegaMax = .1
-        self.SET_POINT = 45
+        self.omegaMin = -.2
+        self.omegaMax = .2
 
         self.testCD = 30
         self.testCDMax = 30
 
-    def __get_slope(self, sensorInfo):
+    def __get_slope(self, sensorInfo, rOffsets):
         slope = []
 
         for i in range(len(sensorInfo)):
@@ -35,25 +34,31 @@ class Controller():
                 get_arctan = np.arctan2(dy, dx)
                 if get_arctan < 0:
                     get_arctan = 2*math.pi + get_arctan
-                slope.append(get_arctan/math.pi)
+                slope.append((get_arctan/math.pi, rOffsets[i]))
 
         return slope
 
     def __get_error(self, slope, radian):
         errors = []
 
-        for i in slope:
-            sp_1 = i - radian
+        for i in range(len(slope)):
+            sp_1 = slope[i][0] - radian
 
-            if i > radian:
-                sp_2 = radian + (2 - i)
+            if slope[i][0] > radian:
+                sp_2 = radian + (2 - slope[i][0])
             else:
-                sp_2 = i + (2 - radian)
+                sp_2 = slope[i][0] + (2 - radian)
 
-            get_min = min([sp_1, sp_2], key=abs)
+            get_min = (min([sp_1, sp_2], key=abs), slope[i][1])
             errors.append(get_min)
 
-        return max(errors, key=abs)
+        get_max = 0
+        for j in range(len(errors)):
+            get_max = max(get_max, abs(errors[j][0]))
+
+        for k in range(len(errors)):
+            if abs(errors[k][0]) == get_max:
+                return errors[k]
 
     def changeDir(self, gain):
         self.omega += gain
@@ -89,15 +94,18 @@ class Controller():
         return (cos_theta, sin_theta, self.radian)
 
     def PID(self, sensorInfo, rOffsets, radian):
-        error = 0
+        error = (0, 0)
 
-        slope = self.__get_slope(sensorInfo)
+        slope = self.__get_slope(sensorInfo, rOffsets)
         if slope != []:
             error = self.__get_error(slope, radian)
 
-        k_p = -abs(.05*error)
+        if error[1] <= 1:
+            k_p = -abs(.1*error[0])
+        else:
+            k_p = abs(.1*error[0])
+
         gain = k_p
-        print(gain)
 
         output = self.changeDir(gain)
         return output
