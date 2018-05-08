@@ -21,8 +21,8 @@ class PIDCar():
                                            (self.car.rect.centerx,
                                             self.car.rect.centery))
         self.controller = Controller()
-        self.sensor0 = Sensor(self.gameWindow, True, .1665, 165, 1)   # Starts at top right
-        self.sensor1 = Sensor(self.gameWindow, True, 1.8335, 165, 1)  # Starts at bottom right
+        self.sensor0 = Sensor(self.gameWindow, True, .25, 200, 1)   # Starts at top right
+        self.sensor1 = Sensor(self.gameWindow, True, 1.62, 180, 1)  # Starts at bottom right
         # self.sensor3 = Sensor(self.gameWindow, True,
         #                       .9, 115, 1)              # Starts behind center
         # self.sensor4 = Sensor(self.gameWindow, True,
