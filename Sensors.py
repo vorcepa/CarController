@@ -77,6 +77,12 @@ class Sensor(pg.sprite.Sprite):
         self.testCD = 30
         self.testCDMax = 30
 
+        self.testMax = .1
+        self.testMin = -.09
+        self.testStore = []
+        self.toggle = True
+        self.rotate = 0
+
     def __findNotRoad(self, directionLoc, target, radian):
         self.update()
         car_edge_toggle = True
@@ -125,17 +131,28 @@ class Sensor(pg.sprite.Sprite):
             self.gameWindow.blit(self.image, (self.rect.x, self.rect.y))
             pg.draw.rect(self.image, utils.WHITE, (0, 0, 24, 24), 1)
 
-        return (self.getColor[:3], car_edge, (self.rect.x, self.rect.y), heading)
+        return [self.getColor[:3], car_edge, (self.rect.x, self.rect.y), heading]
 
     def move(self, directionLoc, radian):
-        radian += self.rOffset
+        if self.toggle:
+            self.rotate += self.testMax/6
+            if self.rotate >= self.testMax:
+                self.toggle = False
+        else:
+            self.rotate -= self.testMax/6
+            if self.rotate <= self.testMin:
+                self.toggle = True
+
+        heading_radian = radian
+        radian += self.rOffset + self.rotate
+
         x = int(round(self.dOffset*math.cos(radian*math.pi), 0))
         y = -int(round(self.dOffset*math.sin(radian*math.pi), 0))
         self.rect.x = directionLoc[0]
         self.rect.y = directionLoc[1]
 
         target = (directionLoc[0] + x, directionLoc[1] + y)
-        notRoadDistance = self.__findNotRoad(directionLoc, target, radian)
+        notRoadDistance = self.__findNotRoad(directionLoc, target, heading_radian)
         return notRoadDistance
 
     def update(self):
@@ -167,7 +184,11 @@ class headingSensor(pg.sprite.Sprite):
         self.rect.x = directionLoc[0]
         self.rect.y = directionLoc[1]
         self.update()
-        radian += self.rOffset
+
+        if 0 <= self.rOffset <= 1:
+            radian += .5
+        else:
+            radian += 1.5
         x = int(round(self.dOffset*math.cos(radian*math.pi), 0))
         y = -int(round(self.dOffset*math.sin(radian*math.pi), 0))
 
