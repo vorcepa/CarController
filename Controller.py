@@ -1,21 +1,17 @@
 import pygame as pg
 import numpy as np
 import math
-import utils
 pg.init()
 
 
 class Controller():
-    """
-    TO DO: self.omega needs to be variable.  A gain variable will
-    change omega.  omega will have an absolute magnitude (ie ±.015)
-    that it cannot exceed.
-    """
     def __init__(self):
         self.radian = 0
         self.omega = 0
         self.omegaMin = -.2
         self.omegaMax = .2
+
+        self.integral = 0
 
         self.testCD = 30
         self.testCDMax = 30
@@ -100,12 +96,21 @@ class Controller():
         if slope != []:
             error = self.__get_error(slope, radian)
 
+        self.integral += error[0]*(1/60)
+
         if error[1] <= 1:
             k_p = -abs(.1*error[0])
+            k_i = -.025 * self.integral
         else:
             k_p = abs(.1*error[0])
+            k_i = .025 * self.integral
 
-        gain = k_p
+        self.testCD -= 1
+        if self.testCD <= 0:
+            self.testCD = self.testCDMax
+            print(self.integral)
+
+        gain = k_p - k_i
 
         output = self.changeDir(gain)
         return output
