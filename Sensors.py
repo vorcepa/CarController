@@ -77,12 +77,6 @@ class Sensor(pg.sprite.Sprite):
         self.testCD = 30
         self.testCDMax = 30
 
-        self.testMax = .1
-        self.testMin = -.09
-        self.testStore = []
-        self.toggle = True
-        self.rotate = 0
-
     def __findNotRoad(self, directionLoc, target, radian):
         self.update()
         car_edge_toggle = True
@@ -134,17 +128,8 @@ class Sensor(pg.sprite.Sprite):
         return [self.getColor[:3], car_edge, (self.rect.x, self.rect.y), heading]
 
     def move(self, directionLoc, radian):
-        if self.toggle:
-            self.rotate += self.testMax/6
-            if self.rotate >= self.testMax:
-                self.toggle = False
-        else:
-            self.rotate -= self.testMax/6
-            if self.rotate <= self.testMin:
-                self.toggle = True
-
         heading_radian = radian
-        radian += self.rOffset + self.rotate
+        radian += self.rOffset
 
         x = int(round(self.dOffset*math.cos(radian*math.pi), 0))
         y = -int(round(self.dOffset*math.sin(radian*math.pi), 0))
