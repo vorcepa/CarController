@@ -12,9 +12,10 @@ class Controller():
         self.omegaMax = .2
 
         self.integral = 0
+        self.previous_error = 0
 
-        self.testCD = 30
-        self.testCDMax = 30
+        self.testCD = 15
+        self.testCDMax = 15
 
     def __get_slope(self, sensorInfo, rOffsets):
         slope = []
@@ -97,20 +98,19 @@ class Controller():
             error = self.__get_error(slope, radian)
 
         self.integral += error[0]*(1/60)
+        derivative = (error[0] - self.previous_error)/60
+        self.previous_error = error[0]
 
         if error[1] <= 1:
             k_p = -abs(.1*error[0])
-            k_i = -.025 * self.integral
+            k_i = .025 * self.integral
         else:
             k_p = abs(.1*error[0])
-            k_i = .025 * self.integral
+            k_i = -.025 * self.integral
 
-        self.testCD -= 1
-        if self.testCD <= 0:
-            self.testCD = self.testCDMax
-            print(self.integral)
+        k_d = 6 * derivative
 
-        gain = k_p - k_i
+        gain = k_p + k_i + k_d
 
         output = self.changeDir(gain)
         return output
