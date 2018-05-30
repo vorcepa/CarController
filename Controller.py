@@ -14,6 +14,10 @@ class Controller():
         self.integral = 0
         self.previous_error = 0
 
+        self.p_const = .1
+        self.i_const = 1/60
+        self.d_const = 1/60
+
         self.testCD = 15
         self.testCDMax = 15
 
@@ -97,15 +101,15 @@ class Controller():
         if slope != []:
             error = self.__get_error(slope, radian)
 
-        self.integral += error[0]*(1/60)
-        derivative = (error[0] - self.previous_error)/60
+        self.integral += error[0]*self.i_const
+        derivative = (error[0] - self.previous_error)*self.d_const
         self.previous_error = error[0]
 
         if error[1] <= 1:
-            k_p = -abs(.1*error[0])
+            k_p = -abs(self.p_const*error[0])
             k_i = .025 * self.integral
         else:
-            k_p = abs(.1*error[0])
+            k_p = abs(self.p_const*error[0])
             k_i = -.025 * self.integral
 
         k_d = 6 * derivative
