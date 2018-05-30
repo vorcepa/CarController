@@ -1,5 +1,6 @@
 import pygame as pg
-
+from pygooey import textbox, button
+pg.init()
 
 """
 getFont can be called by any file that imports utils.
@@ -25,3 +26,14 @@ GOLD = (255, 210, 0)
 LIGHTBLUE3 = (154, 192, 205)
 TAN1 = (255, 165, 79)
 CAR1 = (1, 1, 254)
+
+
+# UI elements
+def test_func():
+    pass
+
+
+start_btn = button.Button(rect=(250, 250, 105, 25),
+                          command=test_func,
+                          text='Start!',
+                          font=getFont())
