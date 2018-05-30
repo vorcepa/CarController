@@ -20,31 +20,27 @@ class PIDCar():
         self.dirReticle = DirectionReticle(self.car.image,
                                            (self.car.rect.centerx,
                                             self.car.rect.centery))
+
         self.controller = Controller()
+        self.start_btn = utils.start_btn
+
         self.sensor0 = Sensor(self.gameWindow, True, .1875, 200, 1)   # Starts at top right
         self.sensor1 = Sensor(self.gameWindow, True, 1.75, 180, 1)  # Starts at bottom right
-        # self.sensor3 = Sensor(self.gameWindow, True,
-        #                       .9, 115, 1)              # Starts behind center
-        # self.sensor4 = Sensor(self.gameWindow, True,
-        #                       1.1, 115, 1)
+
         self.sensorList = [self.sensor0, self.sensor1]
         self.sensorOffsets = [i.rOffset for i in self.sensorList]
         self.sensorTest = [None] * len(self.sensorList)
 
-        self.testCD = 9
-        self.testCDMax = 9
+        self.testCD = 15
+        self.testCDMax = 15
 
     def quitGame(self):
         pg.quit()
         raise SystemExit(0)
 
     def gotoMenu(self):
-        rect = self.gameWindow.get_rect()
-
-        def startPlay():
-            self.menu = False
-
         self.menu = True
+
         while self.menu:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -55,6 +51,10 @@ class PIDCar():
                     if event.key == pg.K_ESCAPE:
                         self.quitGame()
 
+                self.start_btn.get_event(event)
+                if self.start_btn.on_release(event):
+                    self.menu = False
+
             self.gameWindow.fill(utils.WHITE)
             text = utils.getFont(size=64, style='bold').render("Self-driving Car", False, utils.BLACK)
             textRect = text.get_rect()
@@ -62,8 +62,11 @@ class PIDCar():
             textRect.y -= 250
             self.gameWindow.blit(text, textRect)
 
+            self.start_btn.draw(self.gameWindow)
             pg.display.update()
             self.clock.tick(self.FPS)
+
+        return
 
     def playGame(self):  # maybe rename later?
         self.gotoMenu()
