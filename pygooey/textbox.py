@@ -2,12 +2,12 @@ import pygame as pg
 import string
 
 class TextBox(object):
-    '''
+    """
     Example can found in run_textbox.py.py
+    """
 
-    '''
-    def __init__(self,rect,**kwargs):
-        '''
+    def __init__(self, rect, **kwargs):
+        """
         Optional kwargs and their defaults:
             "id" : None,
             "command" : None,
@@ -41,7 +41,7 @@ class TextBox(object):
             self.blink_timer = 0.0
             self.delete_timer = 0.0
             self.accepted = string.ascii_letters+string.digits+string.punctuation+" "
-        '''
+        """
         self.rect = pg.Rect(rect)
         self.buffer = []
         self.final = None
@@ -133,7 +133,7 @@ class TextBox(object):
                 if self.buffer:
                     self.buffer.pop()
 
-    def draw(self,surface):
+    def draw(self, surface):
         '''
         Call once on your main game loop
         '''

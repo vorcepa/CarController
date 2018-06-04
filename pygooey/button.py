@@ -1,12 +1,12 @@
 import pygame as pg
 
+
 class Button(object):
-    '''
+    """
     Example can found in run_button.py.py
-    
-    '''
-    def __init__(self,rect,command,**kwargs):
-        '''
+    """
+    def __init__(self, rect, command, **kwargs):
+        """
         Optional kwargs and their defaults:
             "color"             : pg.Color('red'),
             "text"              : None,
@@ -32,7 +32,7 @@ class Button(object):
             self.hovered = False
             self.hover_text = None
             self.clicked_text = None
-        '''
+        """
         self.rect = pg.Rect(rect)
         self.command = command
         self.clicked = False
@@ -42,7 +42,7 @@ class Button(object):
         self.process_kwargs(kwargs)
         self.render_text()
 
-    def process_kwargs(self,kwargs):
+    def process_kwargs(self, kwargs):
         settings = {
             "color"             : pg.Color('red'),
             "text"              : None,
@@ -58,7 +58,7 @@ class Button(object):
             'border_color'      : pg.Color('black'),
             'border_hover_color': pg.Color('yellow'),
             'disabled'          : False,
-            'disabled_color'     : pg.Color('grey'),
+            'disabled_color'    : pg.Color('grey'),
             'radius'            : 3,
         }
         for kwarg in kwargs:
@@ -96,16 +96,13 @@ class Button(object):
             if not self.call_on_release:
                 self.function()
 
+
     def on_release(self,event):
         if self.clicked and self.call_on_release:
-            self.clicked = False
             #if user is still within button rect upon mouse release
             if self.rect.collidepoint(pg.mouse.get_pos()):
                 self.command()
-                return True
-
-        return False
-
+        self.clicked = False
 
     def check_hover(self):
         if self.rect.collidepoint(pg.mouse.get_pos()):
@@ -116,7 +113,7 @@ class Button(object):
         else:
             self.hovered = False
 
-    def draw(self,surface):
+    def draw(self, surface):
         '''
         Call once on your main game loop
         '''
