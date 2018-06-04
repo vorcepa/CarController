@@ -17,6 +17,8 @@ class Controller():
         self.p_const = .1
         self.i_const = 1/60
         self.d_const = 1/60
+        self.n = 0
+        self.gain = 0
 
         self.testCD = 15
         self.testCDMax = 15
@@ -96,12 +98,13 @@ class Controller():
 
     def PID(self, sensorInfo, rOffsets, radian):
         error = (0, 0)
+        self.n += 1
 
         slope = self.__get_slope(sensorInfo, rOffsets)
         if slope != []:
             error = self.__get_error(slope, radian)
 
-        self.integral += error[0]*self.i_const
+        self.integral += error[0]*self.i_const/self.n
         derivative = (error[0] - self.previous_error)*self.d_const
         self.previous_error = error[0]
 
@@ -114,7 +117,7 @@ class Controller():
 
         k_d = 6 * derivative
 
-        gain = k_p + k_i + k_d
+        self.gain = k_p + k_i + k_d
 
-        output = self.changeDir(gain)
+        output = self.changeDir(self.gain)
         return output
