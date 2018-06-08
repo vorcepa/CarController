@@ -442,7 +442,7 @@ def cancel_update():
 def defaults():
     game.controller.p_const = .1
     game.controller.i_const = 1/60
-    game.controller.d_const = 1/60
+    game.controller.d_const = 1/30
     reset_func()
     game.see_coeff_box = False
 

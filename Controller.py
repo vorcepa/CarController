@@ -14,9 +14,9 @@ class Controller():
         self.integral = 0
         self.previous_error = 0
 
-        self.p_const = .1
+        self.p_const = .2
         self.i_const = 1/60
-        self.d_const = 1/60
+        self.d_const = 1/30
         self.n = 0
         self.gain = 0
 
